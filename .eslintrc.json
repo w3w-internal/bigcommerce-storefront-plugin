@@ -1,0 +1,43 @@
+{
+  "extends": ["./node_modules/gts/", "prettier"],
+  "plugins": ["simple-import-sort"],
+  "rules": {
+    "object-curly-spacing": ["warn", "always"],
+    "node/no-extraneous-import": [
+      "error",
+      {
+        "allowModules": [
+          "react" /* React is bundled during build time and not required in dependencies  */
+        ]
+      }
+    ],
+    "@typescript-eslint/consistent-type-imports": "error",
+    "simple-import-sort/imports": [
+      "error",
+      {
+        "groups": [
+          // Packages `react` related packages come first.
+          ["^(react)|(next)", "^@?\\w"],
+          // Org packages
+          ["^@what3words(/.*|$)", "^@?\\w"],
+          // Internal packages.
+          ["^@(/.*|$)"],
+          // Side effect imports.
+          ["^\\u0000"],
+          // Parent imports. Put `..` last.
+          ["^\\.\\.(?!/?$)", "^\\.\\./?$"],
+          // Other relative imports. Put same-folder imports and `.` last.
+          ["^\\./(?=.*/)(?!/?$)", "^\\.(?!/?$)", "^\\./?$"],
+          // Style imports.
+          ["^.+\\.?(scss)$"]
+        ]
+      }
+    ],
+    "simple-import-sort/exports": "error"
+  },
+  "parserOptions": {
+    "ecmaVersion": 11,
+    "sourceType": "module"
+  },
+  "overrides": []
+}

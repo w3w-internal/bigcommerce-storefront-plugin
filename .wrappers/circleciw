@@ -1,0 +1,35 @@
+#!/bin/bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+CIRCLECI_VERSION="0.1.22150"
+
+if [ -z ${CIRCLECI_BIN_PATH+x} ]; then
+	CIRCLECI_BIN_PATH="$DIR/.circleci";
+fi
+
+platform='unknown'
+unamestr=`uname`
+if [[ "$unamestr" == 'Linux' ]]; then
+   platform='linux'
+elif [[ "$unamestr" == 'Darwin' ]]; then
+   platform='darwin'
+fi
+
+CIRCLECI_URL="https://github.com/CircleCI-Public/circleci-cli/releases/download/v$CIRCLECI_VERSION/circleci-cli_${CIRCLECI_VERSION}_${platform}_amd64.tar.gz"
+
+CIRCLECI_PATH="$CIRCLECI_BIN_PATH/$CIRCLECI_VERSION"
+CIRCLECI_CMD="$CIRCLECI_PATH/circleci"
+CIRCLECI_DIR="circleci-cli_${CIRCLECI_VERSION}_${platform}_amd64"
+
+if ! type "$CIRCLECI_CMD" > /dev/null 2>&1; then
+	echo "Downloading $CIRCLECI_URL"
+	mkdir -p "$CIRCLECI_PATH"
+	curl -L -s "$CIRCLECI_URL" -o $CIRCLECI_PATH/circleci.tar.gz
+  tar -C $CIRCLECI_PATH -xvzf $CIRCLECI_PATH/circleci.tar.gz $CIRCLECI_DIR/circleci
+  mv $CIRCLECI_PATH/$CIRCLECI_DIR/circleci $CIRCLECI_PATH
+  rm -rf $CIRCLECI_PATH/$CIRCLECI_DIR $CIRCLECI_PATH/circleci.tar.gz
+	cd $CIRCLECI_PATH && chmod +x circleci && cd -
+fi
+
+$CIRCLECI_CMD $@

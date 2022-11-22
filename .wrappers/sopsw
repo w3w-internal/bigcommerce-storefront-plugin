@@ -1,0 +1,30 @@
+#!/bin/bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" &> /dev/null && pwd )"
+
+SOPS_VERSION="3.7.1"
+
+if [ -z ${SOPS_BIN_PATH+x} ]; then
+	SOPS_BIN_PATH="$DIR/.sops";
+fi
+
+platform='unknown'
+unamestr=`uname`
+if [[ "$unamestr" == 'Linux' ]]; then
+   platform='linux'
+elif [[ "$unamestr" == 'Darwin' ]]; then
+   platform='darwin'
+fi
+
+SOPS_URL="https://github.com/mozilla/sops/releases/download/v$SOPS_VERSION/sops-v$SOPS_VERSION.$platform"
+
+SOPS_PATH="$SOPS_BIN_PATH/$SOPS_VERSION"
+SOPS_CMD="$SOPS_PATH/sops"
+if ! type "$SOPS_CMD" > /dev/null 2>&1; then
+	echo "Downloading $SOPS_URL"
+	mkdir -p "$SOPS_PATH"
+	curl -L -s "$SOPS_URL" -o $SOPS_PATH/sops
+	cd $SOPS_PATH && chmod +x sops && cd -
+fi
+
+$SOPS_CMD $@
