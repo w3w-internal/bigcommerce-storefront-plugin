@@ -1,24 +1,41 @@
-console.log('Try npm run lint/fix!');
+import { createAutosuggestComponent } from './components/auto-suggest';
+import { loadW3wComponentLib } from './components/lib-src';
+import { getObserver } from './components/observers';
 
-const longString =
-  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Integer ut aliquet diam.';
+loadW3wComponentLib();
 
-const trailing = 'Semicolon';
+const unmountObserver = getObserver('input[name="shippingAddress.address2"]', {
+  onUnmount() {
+    mountObserver.observe(document.body, { childList: true, subtree: true });
+    unmountObserver.disconnect();
+  },
+});
 
-const why = 'am I tabbed?';
+const mountObserver = getObserver<HTMLInputElement>(
+  'input[name="shippingAddress.address2"]',
+  {
+    onMount(el) {
+      const label = document.querySelector(
+        '#addressLine2Input-label'
+      ) as HTMLLabelElement | null;
+      label!.innerHTML = 'what3words address';
+      const w3wComponent = createAutosuggestComponent({
+        api_key: 'YOUR_API',
+      } as any);
 
-export function doSomeStuff(
-  withThis: string,
-  andThat: string,
-  andThose: string[]
-) {
-  //function on one line
-  if (!andThose.length) {
-    return false;
+      el?.parentNode?.insertBefore(w3wComponent, el);
+      el?.setAttribute('autocomplete', 'off');
+      w3wComponent.appendChild(el as any);
+      mountObserver.disconnect();
+      unmountObserver.observe(document, {
+        childList: true,
+        subtree: true,
+      });
+    },
   }
-  console.log(withThis);
-  console.log(andThat);
-  console.dir(andThose);
-  return;
-}
-// TODO: more examples
+);
+
+mountObserver.observe(document, {
+  childList: true,
+  subtree: true,
+});
