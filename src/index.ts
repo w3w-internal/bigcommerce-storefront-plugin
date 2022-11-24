@@ -1,9 +1,22 @@
 import { createAutosuggestComponent } from './components/auto-suggest';
 import { loadW3wComponentLib } from './components/lib-src';
 import { getObserver } from './components/observers';
+import { loadBigCommerceSDK } from './components/service';
 
-(() => {
-  window.w3wConfig = window.w3wConfig || {};
+(async () => {
+  await loadBigCommerceSDK();
+  const bcSdk = await (window as any).checkoutKitLoader.load('checkout-sdk');
+  const checkoutService = bcSdk.createCheckoutService();
+  window.w3wConfig = window.w3wConfig || {
+    field_selector: {
+      enabled: false,
+    },
+    enabled: true,
+    api_key: 'ANCFEHWH',
+    field_label: {
+      enabled: false,
+    },
+  };
   if (!window.w3wConfig.enabled) {
     return;
   }
@@ -23,6 +36,12 @@ import { getObserver } from './components/observers';
     },
   });
 
+  // Experiment
+  const cart = await fetch('/api/storefront/carts')
+    .then(res => res.json())
+    .then(data => data[0]);
+  const state = await checkoutService.loadCheckout(cart.id);
+  console.log(state);
   const mountObserver = getObserver<HTMLInputElement>(fieldSelector, {
     onMount(el) {
       const label = document.querySelector(
@@ -35,6 +54,13 @@ import { getObserver } from './components/observers';
       el.parentNode?.insertBefore(w3wComponent, el);
       el.setAttribute('autocomplete', 'off');
       w3wComponent.appendChild(el as any);
+      w3wComponent.addEventListener('selected_suggestion', (e: any) => {
+        setTimeout(() => {
+          checkoutService.updateShippingAddress({
+            address2: '///' + e.detail.suggestion.words,
+          });
+        }, 3000 /* there is a 3 second throttle on onChange event, we want to top that */);
+      });
       mountObserver.disconnect();
       unmountObserver.observe(document, {
         childList: true,
@@ -47,4 +73,4 @@ import { getObserver } from './components/observers';
     childList: true,
     subtree: true,
   });
-})();
+})().catch(console.error);

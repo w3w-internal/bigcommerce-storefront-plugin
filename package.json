@@ -71,5 +71,8 @@
   "validate-branch-name": {
     "pattern": "^main$|^(IN|in)()(-\\d+)(-[a-z-]+)?$",
     "errorMsg": "Please follow this pattern: <JIRA-TASK>-<optional kebab case description>: EG: tt-7635 or TT-7241-feature-1"
+  },
+  "dependencies": {
+    "@bigcommerce/checkout-sdk": "^1.308.3"
   }
 }
