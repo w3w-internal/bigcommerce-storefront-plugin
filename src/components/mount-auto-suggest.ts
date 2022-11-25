@@ -24,14 +24,14 @@ function mountAutoSuggestComponent(
     originalElement.dispatchEvent(new Event('input', { bubbles: true }));
 
     if (config.save_nearest_place) {
-      // todo - save nearest place
+      // todo - save nearest place - Tracked in IN-115
     }
   });
 
   if (config.save_coordinates) {
     w3wComponent.addEventListener('coordinates_changed', (e: any) => {
       const { lat, lng } = e.detail.coordinates;
-      // todo - save coordinates
+      // todo - save coordinates - Tracked in IN-116
     });
   }
 
