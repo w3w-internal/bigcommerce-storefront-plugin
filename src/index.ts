@@ -1,5 +1,5 @@
-import { createAutosuggestComponent } from './components/auto-suggest';
 import { loadW3wComponentLib } from './components/lib-src';
+import { mountAutoSuggestComponent } from './components/mount-auto-suggest';
 import { getObserver } from './components/observers';
 
 (async () => {
@@ -12,6 +12,20 @@ import { getObserver } from './components/observers';
     field_label: {
       enabled: false,
     },
+    autosuggest_focus: {
+      enabled: false,
+    },
+    save_coordinates: false,
+    save_nearest_place: false,
+    show_tooltip: false,
+    clip_to_bounding_box: { enabled: false },
+    clip_to_circle: { enabled: false },
+    clip_to_country: { enabled: false },
+    clip_to_polygon: { enabled: false },
+    invalid_address_error_message: { enabled: false },
+    language: { enabled: false },
+    n_focus_results: { enabled: false },
+    placeholder: { enabled: false },
   };
   if (!window.w3wConfig.enabled) {
     return;
@@ -24,43 +38,15 @@ import { getObserver } from './components/observers';
       ? window.w3wConfig.field_selector.value
       : 'shippingAddress.address2'
   }"]`;
-  const unmountObserver = getObserver(fieldSelector, {
-    onUnmount() {
-      mountObserver.observe(document.body, { childList: true, subtree: true });
-      unmountObserver.disconnect();
-    },
-  });
 
-  // Experiment
-  const mountObserver = getObserver<HTMLInputElement>(fieldSelector, {
+  const observer = getObserver<HTMLInputElement>(fieldSelector, {
+    onUnmount() {},
     onMount(el) {
-      const label = document.querySelector(
-        `label[for="${el.getAttribute('id')}"]`
-      ) as HTMLLabelElement | null;
-      label!.innerHTML =
-        window.w3wConfig.field_label.value || 'what3words Address (optional)';
-      const w3wComponent = createAutosuggestComponent(window.w3wConfig);
-
-      el.parentNode?.insertBefore(w3wComponent, el);
-      el.setAttribute('autocomplete', 'off');
-      w3wComponent.appendChild(el as any);
-      w3wComponent.addEventListener('selected_suggestion', (e: any) => {
-        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
-          window.HTMLInputElement.prototype,
-          'value'
-        )?.set;
-        // space is needed to override the shallow comparison done by the bigcommerce checkout
-        nativeInputValueSetter?.call(el, '/// ' + e.detail.suggestion.words);
-      });
-      mountObserver.disconnect();
-      unmountObserver.observe(document, {
-        childList: true,
-        subtree: true,
-      });
+      mountAutoSuggestComponent(el, window.w3wConfig);
     },
   });
 
-  mountObserver.observe(document, {
+  observer.observe(document.body, {
     childList: true,
     subtree: true,
   });
