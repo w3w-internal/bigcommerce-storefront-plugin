@@ -1,30 +1,28 @@
-import type { PluginSettings } from '../types/plugin-config';
+import type { PluginSettings } from '@/types/plugin-config';
+import { getInput } from '@/utils/get-input';
+import { hideDynamicField, hideElement } from '@/utils/hide-element';
+import { setElementValue } from '@/utils/set-element-value';
 
 import { createAutosuggestComponent } from './auto-suggest';
 import { createInputFragment } from './input';
-
-const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
-  window.HTMLInputElement.prototype,
-  'value'
-)?.set;
 
 function mountAutoSuggestComponent(
   originalElement: HTMLInputElement,
   config: PluginSettings
 ) {
+  const nearestPlaceInput = config.save_nearest_place.enabled
+    ? getInput(config.save_nearest_place.value)
+    : null;
+  hideDynamicField(nearestPlaceInput);
+
   const w3wComponent = createAutosuggestComponent(config, {
     defaultLanguage: 'en',
   });
 
   w3wComponent.addEventListener('selected_suggestion', (e: any) => {
-    nativeInputValueSetter?.call(
-      originalElement,
-      '///' + e.detail.suggestion.words
-    );
-    originalElement.dispatchEvent(new Event('input', { bubbles: true }));
-
-    if (config.save_nearest_place) {
-      // todo - save nearest place - Tracked in IN-115
+    setElementValue(originalElement, '///' + e.detail.suggestion.words);
+    if (nearestPlaceInput) {
+      setElementValue(nearestPlaceInput, e.detail.suggestion.nearestPlace);
     }
   });
 
@@ -58,7 +56,7 @@ function mountAutoSuggestComponent(
     }
   }
   const wrapper = originalElement.closest('.dynamic-form-field') as HTMLElement;
-  wrapper?.style.setProperty('display', 'none');
+  hideElement(wrapper);
   wrapper?.parentNode?.insertBefore(inputFragment, wrapper);
 }
 

@@ -1,5 +1,5 @@
-import { COMPONENT_LIB_MODULE, COMPONENT_LIB_NO_MODULE } from '../constants';
-import { loadJavaScript } from '../utils/load-js';
+import { COMPONENT_LIB_MODULE, COMPONENT_LIB_NO_MODULE } from '@/constants';
+import { loadJavaScript } from '@/utils/load-js';
 
 export function loadW3wComponentLib(apiKey: string) {
   const libUrlNoModule = new URL(COMPONENT_LIB_NO_MODULE);

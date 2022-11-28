@@ -19,7 +19,10 @@ import { getObserver } from './components/observers';
       enabled: false,
     },
     save_coordinates: false,
-    save_nearest_place: false,
+    save_nearest_place: {
+      enabled: true,
+      value: 'shippingAddress.customFields.field_26',
+    },
     show_tooltip: true,
     clip_to_bounding_box: { enabled: false },
     clip_to_circle: { enabled: false },
