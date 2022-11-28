@@ -1,3 +1,6 @@
+import './components/tooltip';
+import './styles.css';
+
 import { loadW3wComponentLib } from './components/lib-src';
 import { mountAutoSuggestComponent } from './components/mount-auto-suggest';
 import { getObserver } from './components/observers';
@@ -17,7 +20,7 @@ import { getObserver } from './components/observers';
     },
     save_coordinates: false,
     save_nearest_place: false,
-    show_tooltip: false,
+    show_tooltip: true,
     clip_to_bounding_box: { enabled: false },
     clip_to_circle: { enabled: false },
     clip_to_country: { enabled: false },
