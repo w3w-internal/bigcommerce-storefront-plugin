@@ -6,7 +6,7 @@ interface OptionalFieldType {
 interface PluginSettings {
   api_key: string;
   enabled: boolean;
-  save_coordinates: boolean;
+  save_coordinates: OptionalFieldType;
   save_nearest_place: OptionalFieldType;
   show_tooltip: boolean;
   field_label: OptionalFieldType;
