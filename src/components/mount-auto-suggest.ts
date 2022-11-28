@@ -48,15 +48,21 @@ function mountAutoSuggestComponent(
 
   if (!config.clip_to_country.enabled) {
     const countrySelector = document.querySelector(
-      'input[name="shippingAddress.countryCode"]'
+      'select[name="shippingAddress.countryCode"]'
     ) as HTMLSelectElement | null;
 
     if (countrySelector) {
-      w3wComponent.setAttribute('clip_to_country', countrySelector.value);
+      if (countrySelector.value) {
+        w3wComponent.setAttribute('clip_to_country', countrySelector.value);
+      }
 
       countrySelector.addEventListener('change', (e: any) => {
         const country = e.target.value;
-        w3wComponent.setAttribute('clip_to_country', country);
+        if (country) {
+          w3wComponent.setAttribute('clip_to_country', country);
+          return;
+        }
+        w3wComponent.removeAttribute('clip_to_country');
       });
     }
   }
