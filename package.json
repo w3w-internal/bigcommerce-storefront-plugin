@@ -69,7 +69,7 @@
     "../.circleci/config.yml": "make validate-circleci"
   },
   "validate-branch-name": {
-    "pattern": "^main$|^(IN|in)()(-\\d+)(-[a-z-]+)?$",
+    "pattern": "^main$|^(TT|IN|DEV)-\\d+(-[a-z0-9-]+)?$",
     "errorMsg": "Please follow this pattern: <JIRA-TASK>-<optional kebab case description>: EG: tt-7635 or TT-7241-feature-1"
   }
 }
