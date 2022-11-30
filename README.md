@@ -1,27 +1,26 @@
-# Javascript Library Boilerplate
+# BigCommerce store front plugin
 
-A starter boilerplate template for creating Typescript libraries.
+This plugin adds w3w autocomplete to the BigCommerce store front. Should be used in conjunction with the [BigCommerce plugin](#not-yet).
 
-## Why use this?
+## Build
 
-If you need to create a JavaScript/NPM based library for your project then this is the starting point for you at what3words. This template provides the base structure and configuration for Typescript, with linting and prettier rules, testing is run with Mocha, Sinon and test coverage and reports is provided by Istanbul.
+To build the plugin, run the following command:
 
-It is also very quick to setup the CI pipeline. The CI pipeline will automatically transpile the project, run tests and coverage, publish the package to NPM and tag the git repo with the version in the project `package.json`. No configuration necessary!
-
-## Getting Started
-
-1. Create a new git repo and use this project as a template
-2. Clone your new git repository locally
-3. Run makefile script which will inject your project name into the required files and clean up after itself.
 ```bash
-# replace PROJECT_NAME with the name of the application
-make init project=PROJECT_NAME
+  npm install
+  npm run build
 ```
-4. Add the project to CircleCI
-5. Add your code *and tests*
-6. Commit and enjoy!
 
+this will generate a single file `build/index.js` which can be uploaded to BigCommerce.
+there also a `compile` script available in the package.json which can be used to do static type checking without generating the build file.
 
-##
-[Chris]: https://github.com/c5haw
-[Thomas]: https://github.com/tzlillington
+## Test
+
+To test the plugin, run the following command:
+
+```bash
+  npm install
+  npm run test
+```
+
+## Deploy
