@@ -58,11 +58,11 @@ function mountAutoSuggestComponent(
 
       countrySelector.addEventListener('change', (e: any) => {
         const country = e.target.value;
-        if (country) {
-          w3wComponent.setAttribute('clip_to_country', country);
+        if (!country) {
+          w3wComponent.removeAttribute('clip_to_country');
           return;
         }
-        w3wComponent.removeAttribute('clip_to_country');
+        w3wComponent.setAttribute('clip_to_country', country);
       });
     }
   }
