@@ -7,7 +7,7 @@ interface PluginSettings {
   api_key: string;
   enabled: boolean;
   save_coordinates: boolean;
-  save_nearest_place: boolean;
+  save_nearest_place: OptionalFieldType;
   show_tooltip: boolean;
   field_label: OptionalFieldType;
   invalid_address_error_message: OptionalFieldType;
