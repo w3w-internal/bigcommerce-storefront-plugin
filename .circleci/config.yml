@@ -8,24 +8,17 @@ parameters:
     type: string
     default: 'cdn.what3words.com'
 
-only-deploy-tags: &only-deploy-tags
+only-prerelease-tags: &only-prerelease-tags
   filters:
     tags:
-      only: /^deploy-.*/
-    branches:
-      ignore: /.*/
+      only: /^v([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9]+)*))?(?:\+[0-9]+)?$/
 
-only-preprod-tags: &only-preprod-tags
+only-stable-tags: &only-stable-tags
   filters:
     tags:
-      only: /^preprod-.*/
+      only: /^v([0-9]+)\.([0-9]+)\.([0-9]+)$/
     branches:
       ignore: /.*/
-
-only-main: &only-main
-  filters:
-    branches:
-      only: main
 
 orbs:
   node: circleci/node@2.1.0
@@ -127,26 +120,6 @@ jobs:
       PACKAGE_NAME: what3words
     steps:
       - checkout
-      - setup_environment
-      - node/install-packages
-      - run: npm run coverage
-      - run: npm run build
-      - store_artifacts:
-          path: coverage
-      - persist_to_workspace:
-          root: .
-          paths:
-            - ./build
-
-  build-preprod:
-    executor: build-executor
-    environment:
-      PACKAGE_NAME: what3words-preprod
-      BASE_URL: https://api.london.preprod.w3w.io/v3
-
-    steps:
-      - checkout
-      - setup_environment
       - node/install-packages
       - run: npm run coverage
       - run: npm run build
@@ -170,21 +143,6 @@ jobs:
       - aws-s3/sync:
           from: /tmp/workspace/build/
           to: 's3://<< pipeline.parameters.dev-s3-bucket >>/bigcommerce-storefront-plugin/'
-          arguments: --delete
-
-  publish-preprod:
-    executor: publish-executor
-    steps:
-      - run:
-          name: 'install basic utility tools'
-          command: yum install -y tar gzip which git
-      - attach_workspace:
-          at: /tmp/workspace
-      - setup_environment:
-          version_path: /tmp/workspace/
-      - aws-s3/sync:
-          from: /tmp/workspace/build/
-          to: 's3://<< pipeline.parameters.dev-s3-bucket >>/bigcommerce-storefront-plugin-preprod/'
           arguments: --delete
 
   publish:
@@ -222,27 +180,17 @@ workflows:
       - build-dev:
           context: org-global
       - build-prod:
-          <<: *only-deploy-tags
-          context: org-global
-      - build-preprod:
-          <<: *only-preprod-tags
+          <<: *only-stable-tags
           context: org-global
       - publish-dev:
-          <<: *only-main
+          <<: *only-prerelease-tags
           context:
             - org-global
             - org-w3w-aws-dev
           requires:
             - build-dev
-      - publish-preprod:
-          <<: *only-preprod-tags
-          context:
-            - org-global
-            - org-w3w-aws-dev
-          requires:
-            - build-preprod
       - publish:
-          <<: *only-deploy-tags
+          <<: *only-stable-tags
           context:
             - org-global
             - org-w3w-aws-prod
