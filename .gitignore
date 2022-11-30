@@ -211,3 +211,4 @@ $RECYCLE.BIN/
 *.dec.*
 
 # End of https://www.toptal.com/developers/gitignore/api/node,macos,windows,visualstudiocode
+build
