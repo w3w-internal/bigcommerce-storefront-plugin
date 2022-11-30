@@ -1,6 +1,8 @@
 const path = require('path');
 const webpack = require('webpack');
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const JsInlineCssWebpackPlugin =
+  require('js-inline-css-webpack-plugin').default;
 
 module.exports = {
   entry: {
@@ -33,5 +35,6 @@ module.exports = {
       'process.env.PACKAGE_NAME': JSON.stringify(process.env.PACKAGE_NAME),
     }),
     new MiniCssExtractPlugin({ filename: 'store-front.css' }),
+    new JsInlineCssWebpackPlugin(),
   ],
 };

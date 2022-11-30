@@ -58,7 +58,6 @@ function mountAutoSuggestComponent(
     }
   }
   const wrapper = originalElement.closest('.dynamic-form-field') as HTMLElement;
-  console.log(wrapper);
   wrapper?.style.setProperty('display', 'none');
   wrapper?.parentNode?.insertBefore(inputFragment, wrapper);
 }
