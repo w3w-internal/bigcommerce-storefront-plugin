@@ -15,6 +15,11 @@ function mountAutoSuggestComponent(
     : null;
   hideDynamicField(nearestPlaceInput);
 
+  const coordinatesInput = config.save_coordinates.enabled
+    ? getInput(config.save_coordinates.value)
+    : null;
+  hideDynamicField(coordinatesInput);
+
   const w3wComponent = createAutosuggestComponent(config, {
     defaultLanguage: 'en',
   });
@@ -26,10 +31,10 @@ function mountAutoSuggestComponent(
     }
   });
 
-  if (config.save_coordinates) {
+  if (coordinatesInput) {
     w3wComponent.addEventListener('coordinates_changed', (e: any) => {
       const { lat, lng } = e.detail.coordinates;
-      // todo - save coordinates - Tracked in IN-116
+      setElementValue(coordinatesInput, [lng, lat].join(','));
     });
   }
 
