@@ -159,19 +159,6 @@ jobs:
           from: /tmp/workspace/build/
           to: 's3://<< pipeline.parameters.prod-s3-bucket >>/bigcommerce-storefront-plugin/'
           arguments: --delete
-  tag:
-    executor: build-executor
-    steps:
-      - checkout
-      - add_fingerprint:
-          fingerprint: '__FINGERPRINT__'
-      - setup_environment
-      - git_config:
-          email: circleci@what3words.com
-          author: $CIRCLE_USERNAME
-      - git_tag:
-          tag: v$VERSION
-      - git_push_tags
 
 workflows:
   version: 2
