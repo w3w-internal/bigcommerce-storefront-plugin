@@ -103,7 +103,6 @@ jobs:
       PACKAGE_NAME: what3words-dev
     steps:
       - checkout
-      - setup_environment
       - node/install-packages
       - run: npm run coverage
       - run: npm run build
@@ -138,8 +137,6 @@ jobs:
           command: yum install -y tar gzip which git
       - attach_workspace:
           at: /tmp/workspace
-      - setup_environment:
-          version_path: /tmp/workspace/
       - aws-s3/sync:
           from: /tmp/workspace/build/
           to: 's3://<< pipeline.parameters.dev-s3-bucket >>/bigcommerce-storefront-plugin/'
@@ -153,8 +150,6 @@ jobs:
           command: yum install -y tar gzip which git
       - attach_workspace:
           at: /tmp/workspace
-      - setup_environment:
-          version_path: /tmp/workspace/
       - aws-s3/sync:
           from: /tmp/workspace/build/
           to: 's3://<< pipeline.parameters.prod-s3-bucket >>/bigcommerce-storefront-plugin/'
