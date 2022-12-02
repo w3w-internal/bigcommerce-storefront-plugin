@@ -96,15 +96,39 @@ commands:
           command: git push -f --tags
 
 jobs:
+  tests:
+    executor: build-executor
+    steps:
+      - checkout
+      - node/install-packages
+      - run:
+          name: Lint Project
+          command: npm run lint
+      - run:
+          name: Typescript static analysis
+          command: npm run compile
+      - run:
+          name: Run Unit Tests
+          command: npm run test -- --ci --reporters=default --reporters=jest-junit
+      - run:
+          name: Build Optimized Production Build
+          command: npm run build
+      - store_test_results:
+          name: Store Test Results
+          path: ./junit.xml
+      - persist_to_workspace:
+          root: .
+          paths:
+            - .
+
   build-dev:
     executor: build-executor
     environment:
       BASE_URL: https://api.london.dev.w3w.io/v3
       PACKAGE_NAME: what3words-dev
     steps:
-      - checkout
-      - node/install-packages
-      - run: npm run coverage
+      - attach_workspace:
+          at: /tmp/workspace
       - run: npm run build
       - store_artifacts:
           path: coverage
@@ -118,9 +142,8 @@ jobs:
     environment:
       PACKAGE_NAME: what3words
     steps:
-      - checkout
-      - node/install-packages
-      - run: npm run coverage
+      - attach_workspace:
+          at: /tmp/workspace
       - run: npm run build
       - store_artifacts:
           path: coverage
@@ -159,11 +182,17 @@ workflows:
   version: 2
   build-and-deploy:
     jobs:
+      - tests
       - build-dev:
+          <<: *only-prerelease-tags
           context: org-global
+          requires:
+            - tests
       - build-prod:
           <<: *only-stable-tags
           context: org-global
+          requires:
+            - tests
       - publish-dev:
           <<: *only-prerelease-tags
           context:
