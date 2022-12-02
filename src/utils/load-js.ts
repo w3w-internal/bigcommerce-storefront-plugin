@@ -6,7 +6,7 @@ interface Options {
   attributes?: Record<string, string>;
 }
 
-function loadJavaScript(
+export function loadJavaScript(
   src: string,
   { onerror = noop, onload = noop, attributes = {} }: Options = {}
 ): void {
@@ -20,5 +20,3 @@ function loadJavaScript(
   });
   document.getElementsByTagName('head')[0].appendChild(script);
 }
-
-export { loadJavaScript };
