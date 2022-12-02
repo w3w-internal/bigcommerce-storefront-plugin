@@ -1,5 +1,25 @@
 version: 2.1
 
+parameters:
+  dev-s3-bucket:
+    type: string
+    default: 'cdn.dev.w3w.io'
+  prod-s3-bucket:
+    type: string
+    default: 'cdn.what3words.com'
+
+only-prerelease-tags: &only-prerelease-tags
+  filters:
+    tags:
+      only: /^v([0-9]+)\.([0-9]+)\.([0-9]+)(?:-([0-9A-Za-z-]+(?:\.[0-9]+)*)){1}(?:\+[0-9]+)?$/
+
+only-stable-tags: &only-stable-tags
+  filters:
+    tags:
+      only: /^v([0-9]+)\.([0-9]+)\.([0-9]+)$/
+    branches:
+      ignore: /.*/
+
 orbs:
   node: circleci/node@2.1.0
   slack: circleci/slack@3.4.2
@@ -9,21 +29,23 @@ executors:
   build-executor:
     docker:
       - image: circleci/node:lts
+  publish-executor:
+    docker:
+      - image: amazon/aws-cli:2.0.14
 
 commands:
   setup_environment:
-    description: "Export pipeline number as env var"
+    description: 'Export pipeline number as env var'
     parameters:
       version_path:
         type: string
         default: .
     steps:
       - run:
-          name: "Export pipeline number"
+          name: 'Export pipeline number'
           command: |
             echo "export PIPELINE_NUM=<< pipeline.number >>" >> $BASH_ENV
             echo "export VERSION=$(cat << parameters.version_path >>/package.json | grep '\"version\":' | sed -e 's/  \"version\": \"//' | sed -e 's/\",//')" >> $BASH_ENV
-
   add_fingerprint:
     parameters:
       fingerprint:
@@ -33,7 +55,7 @@ commands:
           fingerprints: << parameters.fingerprint >>
 
   jobstatus:
-    description: "Send customised status messages to Slack"
+    description: 'Send customized status messages to Slack'
     steps:
       - slack/status:
           failure_message: ':red_circle: ${CIRCLE_JOB} job of pipeline ${PIPELINE_NUM} for ${CIRCLE_TAG:-$CIRCLE_BRANCH} by ${CIRCLE_USERNAME} has failed'
@@ -53,7 +75,7 @@ commands:
             git config --global user.name << parameters.author >>
             ssh-keyscan github.com >> ~/.ssh/known_hosts
   git_tag:
-    description: "Tag the project"
+    description: 'Tag the project'
     parameters:
       tag:
         type: string
@@ -67,72 +89,92 @@ commands:
             git tag -f << parameters.tag >>
           when: << parameters.when >>
   git_push_tags:
-    description: "Push tags to remote repository"
+    description: 'Push tags to remote repository'
     steps:
       - run:
           name: git push tags
           command: git push -f --tags
 
 jobs:
-  build_test:
+  build-dev:
     executor: build-executor
+    environment:
+      BASE_URL: https://api.london.dev.w3w.io/v3
+      PACKAGE_NAME: what3words-dev
     steps:
       - checkout
-      - setup_environment
       - node/install-packages
       - run: npm run coverage
-      - run: npm run compile
+      - run: npm run build
       - store_artifacts:
           path: coverage
       - persist_to_workspace:
           root: .
           paths:
-            - .npmrc
-            - ./dist
-            - ./package-lock.json
-            - ./package.json
-      # - jobstatus
+            - ./build
 
-  publish:
+  build-prod:
     executor: build-executor
-    steps:
-      - attach_workspace:
-          at: /tmp/workspace
-      - setup_environment:
-          version_path: /tmp/workspace
-      - run:
-          name: "publish npm"
-          command: cd /tmp/workspace && npm publish
-      # - jobstatus
-
-  tag:
-    executor: build-executor
+    environment:
+      PACKAGE_NAME: what3words
     steps:
       - checkout
-      - add_fingerprint:
-          fingerprint: "__FINGERPRINT__"
-      - setup_environment
-      - git_config:
-          email: circleci@what3words.com
-          author: $CIRCLE_USERNAME
-      - git_tag:
-          tag: v$VERSION
-      - git_push_tags
+      - node/install-packages
+      - run: npm run coverage
+      - run: npm run build
+      - store_artifacts:
+          path: coverage
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./build
+
+  publish-dev:
+    executor: publish-executor
+    steps:
+      - run:
+          name: 'install basic utility tools'
+          command: yum install -y tar gzip which git
+      - attach_workspace:
+          at: /tmp/workspace
+      - aws-s3/sync:
+          from: /tmp/workspace/build/
+          to: 's3://<< pipeline.parameters.dev-s3-bucket >>/bigcommerce-storefront-plugin/'
+          arguments: --delete
+
+  publish:
+    executor: publish-executor
+    steps:
+      - run:
+          name: 'install basic utility tools'
+          command: yum install -y tar gzip which git
+      - attach_workspace:
+          at: /tmp/workspace
+      - aws-s3/sync:
+          from: /tmp/workspace/build/
+          to: 's3://<< pipeline.parameters.prod-s3-bucket >>/bigcommerce-storefront-plugin/'
+          arguments: --delete
 
 workflows:
   version: 2
   build-and-deploy:
     jobs:
-      - build_test:
+      - build-dev:
           context: org-global
+      - build-prod:
+          <<: *only-stable-tags
+          context: org-global
+      - publish-dev:
+          <<: *only-prerelease-tags
+          context:
+            - org-global
+            - org-w3w-aws-dev
+          requires:
+            - build-dev
       - publish:
-          context: org-global
+          <<: *only-stable-tags
+          context:
+            - org-global
+            - org-w3w-aws-prod
           requires:
-            - build_test
-          filters:
-            branches:
-              only: main
-      - tag:
-          requires:
-            - publish
-
+            - build-prod
