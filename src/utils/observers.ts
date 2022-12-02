@@ -5,7 +5,7 @@ export function getObserver<T = HTMLElement>(
   let isMounted = false;
   const observer = new MutationObserver(() => {
     try {
-      const element = document.querySelector(selector);
+      const element = document?.querySelector(selector);
       if (!element && isMounted) {
         isMounted = false;
         opts.onUnmount?.();

@@ -17,7 +17,10 @@ function createAutosuggestComponent(config: PluginSettings, props: Props = {}) {
         ')',
     })
   );
-  w3wComponent.setAttribute('return_coordinates', 'true');
+
+  if (config.save_coordinates.enabled) {
+    w3wComponent.setAttribute('return_coordinates', 'true');
+  }
 
   if (config.clip_to_country.enabled) {
     w3wComponent.setAttribute('clip_to_country', config.clip_to_country.value);
