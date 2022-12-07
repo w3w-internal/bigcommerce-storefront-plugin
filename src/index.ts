@@ -3,7 +3,7 @@ import './styles.css';
 
 import { loadW3wComponentLib } from './components/lib-src';
 import { mountAutoSuggestComponent } from './components/mount-auto-suggest';
-import { getObserver } from './components/observers';
+import { getObserver } from './utils/observers';
 
 (async () => {
   window.w3wConfig = window.w3wConfig || {

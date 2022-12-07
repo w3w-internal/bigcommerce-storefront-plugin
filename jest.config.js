@@ -6,4 +6,9 @@ module.exports = {
     '^@/(.*)$': '<rootDir>/src/$1',
   },
   testEnvironment: 'jest-environment-jsdom',
+  modulePathIgnorePatterns: [
+    '<rootDir>/dist/',
+    '<rootDir>/build/',
+    '<rootDir>/node_modules/',
+  ],
 };
